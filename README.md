@@ -40,7 +40,7 @@ A complete data pipeline and interactive web dashboard for analysing publicly av
 | ✈️ **Flight Analysis** | Aircraft usage charts, departure/arrival heatmaps, full flight log table with passenger names |
 | 📄 **Ranked Documents** | 25,781 AI-ranked documents from U.S. House Oversight with importance scores, tags, and key insights |
 | 🕸️ **Network Graph** | Interactive D3.js force-directed graph with 305 nodes and 1,000 relationship links |
-| 🖼️ **Image Integration** | 73 person headshots auto-fetched from Wikipedia, 5,702 document scans from Kaggle |
+| 🖼️ **Image Integration** | 94 person headshots auto-fetched from Wikipedia, 5,702 document scans from Kaggle |
 
 ---
 
@@ -71,13 +71,13 @@ chmod 600 ~/.kaggle/kaggle.json
 ### Run
 
 ```bash
-# Step 1: Download all data (archive + Kaggle)
+# Step 1: Download all data (archive + Kaggle)          ~ 2 min (first run)
 python scripts/download_data.py
 
-# Step 2: Download & organise person images
+# Step 2: Download & organise person images              ~ 2 min
 python scripts/sync_images.py
 
-# Step 3: Process data into dashboard JSON
+# Step 3: Process data into dashboard JSON               ~ 2 sec
 python scripts/process_data.py
 
 # Step 4: Launch dashboard
@@ -117,8 +117,8 @@ epstein-files-dashboard/
     ├── 📂 relationships/       # Network relationship CSVs
     ├── 📂 emails/              # Email metadata CSVs
     ├── 📂 images/
-    │   ├── 📂 persons/         # Wikipedia headshots (73 images)
-    │   ├── 📂 victims/         # Victim photos (3 images)
+    │   ├── 📂 persons/         # Wikipedia headshots (88 images)
+    │   ├── 📂 victims/         # Victim photos (6 images)
     │   └── 📂 documents/       # EFTA document scans (5,702 images)
     ├── 📂 raw/                 # DOJ metadata
     └── 📂 processed/           # Image index JSON
@@ -138,35 +138,6 @@ epstein-files-dashboard/
 | [U.S. DOJ](https://www.justice.gov/epstein) | ❌ | ~3.5M pages across 12 datasets (metadata only) |
 
 > 🔑 = Requires free [Kaggle API token](https://www.kaggle.com/settings). Core data works without it.
-
----
-
-## 🖥️ Dashboard Tabs
-
-### 📊 Overview
-Key metrics at a glance — total persons, flights, documents. Bar charts for top 15 by flight count and connections. Line chart for flights by year (peak: 2002–2003). Top routes and nationality breakdown.
-
-### 👤 Persons of Interest
-Full-text search, column sorting, category filter (person/organization/location). Paginated table with modal detail view showing bio, stats, and images. Data from both the investigation archive and Kaggle POI dataset.
-
-### ✈️ Flight Analysis
-Aircraft usage breakdown (N908JE: 38 flights, N986JE: 17 flights). Top departure/arrival airports. Complete flight log table with dates, routes, and passenger manifests.
-
-### 📄 Documents
-25,781 ranked documents with AI-generated importance scores (1–10), headlines, reasoning, tags, and power mentions. Filterable by importance threshold.
-
-### 🕸️ Network Graph
-Interactive force-directed graph (D3.js) with 305 nodes and 1,000 links. Colour-coded by connection intensity (red = high, yellow = medium, green = low, blue = flight-only). Adjustable minimum connections slider and person search/highlight.
-
----
-
-## 🔧 Scripts
-
-| Script | Purpose | Runtime |
-|--------|---------|---------|
-| `download_data.py` | Downloads all CSVs from archive API + 3 Kaggle datasets | ~2 min |
-| `sync_images.py` | Sorts document scans, fetches Wikipedia headshots | ~3 min |
-| `process_data.py` | Normalises, merges, derives connections → exports JSON | ~2 min |
 
 ---
 
@@ -193,12 +164,6 @@ This project is released under the [MIT License](LICENSE).
 ## ⚠️ Disclaimer
 
 > This project is intended **strictly for research and educational purposes**. All data is sourced from publicly available DOJ releases, court documents, Kaggle datasets, Wikipedia, and public records. This project does not make any claims of guilt or innocence. The inclusion of any individual's name does not imply wrongdoing.
-
----
-
-## 🏷️ Keywords
-
-`epstein` · `osint` · `intelligence-dashboard` · `data-visualisation` · `network-analysis` · `flight-logs` · `d3js` · `chartjs` · `public-records` · `doj` · `investigative-journalism` · `open-source-intelligence` · `dark-theme-dashboard`
 
 ---
 

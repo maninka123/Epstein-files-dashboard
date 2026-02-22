@@ -233,12 +233,19 @@ def download_kaggle_sources():
     results = {}
     for key, config in KAGGLE_DATASETS.items():
         dest_path = FOLDERS[config["destination"]]
-        skip_prefix = config.get("skip_if_exists", "")
-        # Skip only if the Kaggle-specific files are already present
-        already_downloaded = any(
-            skip_prefix and f.name.startswith(skip_prefix)
-            for f in dest_path.iterdir() if f.is_file()
-        ) if dest_path.exists() else False
+        skip_prefix = config.get("skip_if_exists")
+        # Skip if the Kaggle-specific files are already present
+        if dest_path.exists():
+            if skip_prefix:
+                already_downloaded = any(
+                    f.name.startswith(skip_prefix)
+                    for f in dest_path.iterdir() if f.is_file()
+                )
+            else:
+                # No prefix specified — skip if folder has any files at all
+                already_downloaded = any(f.is_file() for f in dest_path.iterdir())
+        else:
+            already_downloaded = False
         if already_downloaded:
             log.info(f"⏩ Skipping {key} (already downloaded)")
             results[key] = True
