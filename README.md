@@ -70,6 +70,8 @@ chmod 600 ~/.kaggle/kaggle.json
 
 ### Run
 
+> **Note:** All processed data files and dashboard JSON are already included in this repo. You only need to re-run the scripts if you want to refresh the data from source.
+
 ```bash
 # Step 1: Download all data (archive + Kaggle)          ~ 2 min (first run)
 python scripts/download_data.py
@@ -97,7 +99,8 @@ epstein-files-dashboard/
 ├── 📂 scripts/
 │   ├── download_data.py        # Downloads CSVs from archive + Kaggle datasets
 │   ├── sync_images.py          # Fetches Wikipedia headshots, sorts images by category
-│   └── process_data.py         # Cleans, normalises, cross-references → exports JSON
+│   ├── process_data.py         # Cleans, normalises, cross-references → exports JSON
+│   └── analyze_documents.py    # (Optional) AI evidence analysis via Gemini
 │
 ├── 📂 dashboard/
 │   ├── index.html              # 5-tab dashboard layout
@@ -121,7 +124,7 @@ epstein-files-dashboard/
     │   ├── 📂 victims/         # Victim photos (6 images)
     │   └── 📂 documents/       # EFTA document scans (5,702 images)
     ├── 📂 raw/                 # DOJ metadata
-    └── 📂 processed/           # Image index JSON
+    └── 📂 processed/           # Image index, evidence_analysis.csv/.xlsx
 ```
 
 ---
@@ -141,17 +144,33 @@ epstein-files-dashboard/
 
 ---
 
-## ⚙️ Tech Stack
+## 🤖 AI Evidence Analysis (Optional)
 
-**Backend / Data Pipeline**
-- Python 3.9+ — pandas, requests, BeautifulSoup4
-- Kaggle CLI — dataset downloads
+The repo includes an AI-powered document analysis script that uses **Google Gemini** to scan all 5,700+ evidence images and extract structured intelligence. The generated results (`evidence_analysis.csv` / `.xlsx`) are already included in the repo — re-running is **optional**.
 
-**Frontend / Dashboard**
-- Vanilla HTML5 + CSS3 + JavaScript (ES6+)
-- [Chart.js v4](https://www.chartjs.org/) — bar, line, doughnut charts
-- [D3.js v7](https://d3js.org/) — force-directed network graph
-- Dark theme with CSS glassmorphism and gradient animations
+### What it extracts
+
+| Column | Description |
+|--------|-------------|
+| `document_type` | Flight Manifest, Court Filing, Personal Letter, Photo Evidence, etc. |
+| `entities_found` | Names of famous people, politicians, or known associates |
+| `person_detection` | Description of visible faces, redacted/blacked-out individuals |
+| `key_findings` | Concise summary of the most important information |
+| `importance_score` | Evidence value rating from 1 (boilerplate) to 10 (critical) |
+| `reasoning` | Why the AI assigned that importance score |
+
+### How to run
+
+```bash
+# 1. Get a free API key from https://aistudio.google.com/
+# 2. Add it to a .env file in the project root:
+echo "GEMINI_API_KEY=your_key_here" > .env
+
+# 3. Run the analysis (resumes from where it left off)
+python scripts/analyze_documents.py
+```
+
+> The script automatically detects the best available Gemini model for your account, saves progress every 5 images, and can be stopped/resumed at any time with `Ctrl+C`.
 
 ---
 

@@ -2,3 +2,6 @@ pandas
 requests
 beautifulsoup4
 lxml
+google-genai
+openpyxl
+python-dotenv

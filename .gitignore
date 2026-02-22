@@ -2,6 +2,15 @@
 data/
 dashboard/data/
 
+# ── Whitelist: LLM analysis output (include in repo) ─────
+!data/processed/
+!data/processed/evidence_analysis.csv
+!data/processed/evidence_analysis.xlsx
+!data/processed/analysis_state.json
+
+# ── Secrets ───────────────────────────────────────────────
+.env
+
 # ── OS / Editor ───────────────────────────────────────────
 .DS_Store
 Thumbs.db
