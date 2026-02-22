@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epstein Files — Intelligence Dashboard</title>
+    <meta name="description" content="Interactive analysis dashboard for publicly released Jeffrey Epstein case documents, flight logs, and persons of interest.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <!-- D3.js for network graph -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ─── Loading Screen ─────────────────────────────────────────── -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>Loading Intelligence Data</h2>
+            <p id="loading-status">Initializing...</p>
+        </div>
+    </div>
+
+    <!-- ─── Main App ───────────────────────────────────────────────── -->
+    <div id="app" class="app hidden">
+
+        <!-- ─── Header ─────────────────────────────────────────────── -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <span class="logo-icon">⚖️</span>
+                    <div>
+                        <h1>Epstein Files</h1>
+                        <span class="subtitle">Intelligence Analysis Dashboard</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <span class="data-badge" id="data-badge">
+                    <span class="pulse"></span>
+                    <span id="record-count">Loading...</span>
+                </span>
+                <span class="source-badge">Source: DOJ / Public Records</span>
+            </div>
+        </header>
+
+        <!-- ─── Tab Navigation ─────────────────────────────────────── -->
+        <nav class="tab-nav" id="tab-nav">
+            <button class="tab-btn active" data-tab="overview" id="tab-btn-overview">
+                <span class="tab-icon">📊</span>
+                <span class="tab-label">Overview</span>
+            </button>
+            <button class="tab-btn" data-tab="persons" id="tab-btn-persons">
+                <span class="tab-icon">👤</span>
+                <span class="tab-label">Persons of Interest</span>
+            </button>
+            <button class="tab-btn" data-tab="flights" id="tab-btn-flights">
+                <span class="tab-icon">✈️</span>
+                <span class="tab-label">Flight Analysis</span>
+            </button>
+            <button class="tab-btn" data-tab="documents" id="tab-btn-documents">
+                <span class="tab-icon">📄</span>
+                <span class="tab-label">Documents</span>
+            </button>
+            <button class="tab-btn" data-tab="network" id="tab-btn-network">
+                <span class="tab-icon">🕸️</span>
+                <span class="tab-label">Network Graph</span>
+            </button>
+        </nav>
+
+        <!-- ─── Tab Content ────────────────────────────────────────── -->
+        <main class="tab-content">
+
+            <!-- ═══ OVERVIEW TAB ═══════════════════════════════════════ -->
+            <section class="tab-panel active" id="panel-overview">
+                <!-- Metric Cards -->
+                <div class="metric-cards" id="metric-cards">
+                    <div class="metric-card" id="metric-persons">
+                        <div class="metric-icon">👥</div>
+                        <div class="metric-value" id="val-persons">—</div>
+                        <div class="metric-label">Persons of Interest</div>
+                    </div>
+                    <div class="metric-card" id="metric-flights">
+                        <div class="metric-icon">✈️</div>
+                        <div class="metric-value" id="val-flights">—</div>
+                        <div class="metric-label">Flight Records</div>
+                    </div>
+                    <div class="metric-card" id="metric-documents">
+                        <div class="metric-icon">📄</div>
+                        <div class="metric-value" id="val-documents">—</div>
+                        <div class="metric-label">Documents Analyzed</div>
+                    </div>
+                    <div class="metric-card" id="metric-blackbook">
+                        <div class="metric-icon">📓</div>
+                        <div class="metric-value" id="val-blackbook">—</div>
+                        <div class="metric-label">In Black Book</div>
+                    </div>
+                    <div class="metric-card" id="metric-images">
+                        <div class="metric-icon">🖼️</div>
+                        <div class="metric-value" id="val-images">—</div>
+                        <div class="metric-label">Images Indexed</div>
+                    </div>
+                    <div class="metric-card accent" id="metric-doj">
+                        <div class="metric-icon">🏛️</div>
+                        <div class="metric-value" id="val-doj">3.5M+</div>
+                        <div class="metric-label">DOJ Total Pages</div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="chart-grid-2">
+                    <div class="chart-card">
+                        <h3 class="chart-title">Top 15 by Flight Count</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-top-flights"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Top 15 by Connections</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-top-connections"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-grid-2">
+                    <div class="chart-card">
+                        <h3 class="chart-title">Flights by Year</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-flights-year"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Nationality Breakdown</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-nationality"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-grid-1">
+                    <div class="chart-card">
+                        <h3 class="chart-title">Top Flight Routes</h3>
+                        <div class="chart-container wide">
+                            <canvas id="chart-top-routes"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ PERSONS TAB ════════════════════════════════════════ -->
+            <section class="tab-panel" id="panel-persons">
+                <!-- Controls -->
+                <div class="controls-bar">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="persons-search" placeholder="Search by name, nationality..." autocomplete="off">
+                    </div>
+                    <div class="control-group">
+                        <label>Sort by:</label>
+                        <select id="persons-sort">
+                            <option value="flights">Flights (High→Low)</option>
+                            <option value="documents">Documents (High→Low)</option>
+                            <option value="connections">Connections (High→Low)</option>
+                            <option value="name">Name (A→Z)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Filter:</label>
+                        <select id="persons-filter">
+                            <option value="all">All</option>
+                            <option value="black_book">In Black Book</option>
+                            <option value="has_flights">Has Flights</option>
+                            <option value="has_images">Has Images</option>
+                        </select>
+                    </div>
+                    <span class="result-count" id="persons-count">— results</span>
+                </div>
+
+                <!-- Charts -->
+                <div class="chart-grid-2">
+                    <div class="chart-card">
+                        <h3 class="chart-title">Top Passengers by Flights</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-persons-flights"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Category Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-persons-category"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-card">
+                    <div class="table-scroll">
+                        <table id="persons-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Flights</th>
+                                    <th>Documents</th>
+                                    <th>Connections</th>
+                                    <th>Black Book</th>
+                                    <th>Nationality</th>
+                                    <th>Image</th>
+                                </tr>
+                            </thead>
+                            <tbody id="persons-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="persons-pagination"></div>
+                </div>
+            </section>
+
+            <!-- ═══ FLIGHTS TAB ════════════════════════════════════════ -->
+            <section class="tab-panel" id="panel-flights">
+                <div class="controls-bar">
+                    <div class="control-group">
+                        <label>Year Range:</label>
+                        <select id="flights-year-start">
+                            <option value="">All Start</option>
+                        </select>
+                        <span>to</span>
+                        <select id="flights-year-end">
+                            <option value="">All End</option>
+                        </select>
+                    </div>
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="flights-search" placeholder="Search departure, arrival, passenger..." autocomplete="off">
+                    </div>
+                    <div class="control-group">
+                        <label>Aircraft:</label>
+                        <select id="flights-aircraft">
+                            <option value="all">All Aircraft</option>
+                        </select>
+                    </div>
+                    <span class="result-count" id="flights-count">— records</span>
+                </div>
+
+                <div class="chart-grid-2">
+                    <div class="chart-card">
+                        <h3 class="chart-title">Flights per Year</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-flights-timeline"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Aircraft Usage</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-flights-aircraft"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-grid-2">
+                    <div class="chart-card">
+                        <h3 class="chart-title">Top Departure Locations</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-flights-departures"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Top Arrival Locations</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-flights-arrivals"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <h3 class="chart-title">Flight Records</h3>
+                    <div class="table-scroll">
+                        <table id="flights-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Date</th>
+                                    <th>Departure</th>
+                                    <th>Arrival</th>
+                                    <th>Aircraft</th>
+                                    <th>Passengers</th>
+                                </tr>
+                            </thead>
+                            <tbody id="flights-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="flights-pagination"></div>
+                </div>
+            </section>
+
+            <!-- ═══ DOCUMENTS TAB ══════════════════════════════════════ -->
+            <section class="tab-panel" id="panel-documents">
+                <div class="controls-bar">
+                    <div class="control-group">
+                        <label>Min Importance:</label>
+                        <input type="range" id="docs-importance-slider" min="0" max="100" value="0" class="slider">
+                        <span id="docs-importance-value">0</span>
+                    </div>
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="docs-search" placeholder="Search headlines, tags..." autocomplete="off">
+                    </div>
+                    <div class="control-group">
+                        <label>Tag:</label>
+                        <select id="docs-tag-filter">
+                            <option value="all">All Tags</option>
+                        </select>
+                    </div>
+                    <span class="result-count" id="docs-count">— documents</span>
+                </div>
+
+                <div class="chart-grid-2">
+                    <div class="chart-card">
+                        <h3 class="chart-title">Importance Score Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-docs-importance"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Top Tags</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-docs-tags"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-grid-2">
+                    <div class="chart-card">
+                        <h3 class="chart-title">Most Mentioned Individuals</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-docs-power"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3 class="chart-title">Agency Involvement</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-docs-agencies"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <h3 class="chart-title">Document Records</h3>
+                    <div class="table-scroll">
+                        <table id="docs-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Headline</th>
+                                    <th>Score</th>
+                                    <th>Tags</th>
+                                    <th>Key People</th>
+                                    <th>Lead Type</th>
+                                </tr>
+                            </thead>
+                            <tbody id="docs-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="docs-pagination"></div>
+                </div>
+            </section>
+
+            <!-- ═══ NETWORK TAB ════════════════════════════════════════ -->
+            <section class="tab-panel" id="panel-network">
+                <div class="controls-bar">
+                    <div class="control-group">
+                        <label>Min Connections:</label>
+                        <input type="range" id="network-min-conn" min="1" max="20" value="2" class="slider">
+                        <span id="network-conn-value">2</span>
+                    </div>
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="network-search" placeholder="Highlight a person..." autocomplete="off">
+                    </div>
+                    <div class="control-group">
+                        <button class="btn-secondary" id="network-reset">Reset View</button>
+                    </div>
+                    <span class="result-count" id="network-stats">— nodes, — links</span>
+                </div>
+
+                <div class="network-container">
+                    <svg id="network-svg"></svg>
+                    <div class="network-tooltip" id="network-tooltip"></div>
+                    <div class="network-legend">
+                        <h4>Legend</h4>
+                        <div class="legend-item"><span class="legend-dot" style="background:#ff6b6b"></span> High Connections</div>
+                        <div class="legend-item"><span class="legend-dot" style="background:#ffd93d"></span> Medium</div>
+                        <div class="legend-item"><span class="legend-dot" style="background:#6bcb77"></span> Low</div>
+                        <div class="legend-item"><span class="legend-dot" style="background:#4d96ff"></span> Flight Only</div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- ─── Image Modal ────────────────────────────────────────── -->
+        <div class="modal-overlay" id="image-modal">
+            <div class="modal-content">
+                <button class="modal-close" id="modal-close">✕</button>
+                <div class="modal-header">
+                    <h3 id="modal-name">—</h3>
+                    <div class="modal-meta" id="modal-meta"></div>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-images" id="modal-images"></div>
+                    <div class="modal-details" id="modal-details"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── Footer ─────────────────────────────────────────────── -->
+        <footer class="footer">
+            <p>Data sourced from publicly available DOJ releases, court documents, and public records. For research purposes only.</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

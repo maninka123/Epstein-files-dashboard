@@ -1,0 +1,28 @@
+# ── Data (downloaded at runtime) ──────────────────────────
+data/
+dashboard/data/
+
+# ── OS / Editor ───────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# ── Python ────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# ── Misc ──────────────────────────────────────────────────
+*.zip
+*.log
+download_report.json
